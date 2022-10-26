@@ -1,0 +1,30 @@
+name: Scrape mygov for covid19 data
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 */2 * * *'
+
+jobs:
+  scheduled:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch vaccine counts
+      run: |-
+        curl https://www.mygov.in/sites/default/files/covid/vaccine/vaccine_counts_today.json > vaccine_counts_today.json
+    - name: Fetch state counts
+      run: |-
+        curl https://www.mygov.in/sites/default/files/covid/covid_state_counts_ver1.json > covid_state_counts_ver1.json
+
+
+    - name: Commit and push if it changed
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add -A
+        timestamp=$(date -u)
+        git commit -m "Latest data: ${timestamp}" || exit 0
+        git push
+
